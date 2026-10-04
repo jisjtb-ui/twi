@@ -34,12 +34,18 @@ export function RandomPost({ accounts, pool, scheduler, onPoolChanged, onSchedul
   // 保存済み設定をフォームへ反映（初回と、停止以外の状態のとき）
   useEffect(() => {
     if (!settings) return;
+    // 対象の既定値（左の選択）を決めるため、アカウント一覧の読み込みを待つ
+    if (!initialized && settings.accountIds.length === 0 && accounts.length === 0) return;
     if (!initialized || !editable) {
-      setTargetIds(settings.accountIds);
+      setTargetIds(
+        settings.accountIds.length > 0 ? settings.accountIds : accounts.filter((a) => a.selected).map((a) => a.id),
+      );
       setMinMinutes(String(settings.minMinutes));
       setMaxMinutes(String(settings.maxMinutes));
       setInitialized(true);
     }
+    // accounts は初回の既定値にのみ使う
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings, initialized, editable]);
 
   const enabledCount = pool.filter((p) => p.enabled).length;

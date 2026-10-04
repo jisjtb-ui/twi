@@ -28,7 +28,12 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     throw new ApiError("NETWORK_ERROR", "アプリのバックエンドに接続できません。起動しているか確認してください", 0);
   }
   const text = await res.text();
-  const data = text ? (JSON.parse(text) as unknown) : undefined;
+  let data: unknown = undefined;
+  try {
+    data = text ? (JSON.parse(text) as unknown) : undefined;
+  } catch {
+    if (res.ok) throw new ApiError("BAD_RESPONSE", "バックエンドから不正な応答が返されました", res.status);
+  }
   if (!res.ok) {
     const err = (data as ApiErrorBody | undefined)?.error;
     throw new ApiError(err?.code ?? "HTTP_ERROR", err?.message ?? `HTTP ${res.status}`, res.status);

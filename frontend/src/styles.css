@@ -112,6 +112,8 @@ button:focus-visible {
 
 .header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
@@ -124,15 +126,21 @@ button:focus-visible {
   font-weight: 600;
   letter-spacing: 0.02em;
 }
+.header h1,
+.header button {
+  white-space: nowrap;
+}
 .header .right {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
   align-items: center;
 }
 
 .main {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 330px 1fr;
   grid-template-rows: auto auto auto;
   grid-template-areas:
     "accounts work"

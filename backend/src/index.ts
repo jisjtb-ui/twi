@@ -8,7 +8,7 @@ import { oauthRouter } from "./routes/oauth.js";
 import { poolRouter } from "./routes/pool.js";
 import { historyRouter, postsRouter } from "./routes/posts.js";
 import { schedulerRouter } from "./routes/scheduler.js";
-import { errorHandler } from "./routes/util.js";
+import { errorHandler, localOnly } from "./routes/util.js";
 import { initScheduler, shutdownScheduler } from "./services/scheduler/scheduler.js";
 import { getSecretStore } from "./services/security/secretStore.js";
 import { isXConfigured } from "./services/x/client.js";
@@ -18,6 +18,8 @@ const secretStore = await getSecretStore();
 initScheduler();
 
 const app = express();
+app.disable("x-powered-by");
+app.use(localOnly);
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/health", async (_req, res) => {

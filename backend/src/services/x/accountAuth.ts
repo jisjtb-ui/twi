@@ -23,10 +23,6 @@ export function withAccountLock<T>(accountId: number, fn: () => Promise<T>): Pro
   return next;
 }
 
-export function isAccountBusy(accountId: number): boolean {
-  return chains.has(accountId);
-}
-
 // ───────────────── トークン ─────────────────
 
 export function toStoredTokens(res: XTokenResponse, previous?: StoredTokens | null): StoredTokens {
