@@ -294,16 +294,12 @@ export const historyRepo = {
       getDb().prepare("SELECT * FROM post_history WHERE id = ?").get(Number(result.lastInsertRowid)) as Row,
     );
   },
-  /** ランダム投稿で「直前と同じ文章」を避けるため、そのアカウントで最後に試行したランダム投稿を返す */
-  lastRandomForAccount(accountId: number): { postPoolId: number | null; content: string } | null {
+  /** ランダム投稿で「直前と同じ文章」を避けるため、そのアカウントで最後に投稿（試行）した本文を返す */
+  lastContentForAccount(accountId: number): string | null {
     const r = getDb()
-      .prepare(
-        `SELECT post_pool_id, content FROM post_history
-         WHERE account_id = ? AND source = 'random'
-         ORDER BY posted_at DESC, id DESC LIMIT 1`,
-      )
+      .prepare("SELECT content FROM post_history WHERE account_id = ? ORDER BY posted_at DESC, id DESC LIMIT 1")
       .get(accountId) as Row | undefined;
-    return r ? { postPoolId: numOrNull(r.post_pool_id), content: str(r.content) } : null;
+    return r ? str(r.content) : null;
   },
 };
 

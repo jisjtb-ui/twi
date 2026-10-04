@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { accountsRepo } from "../database/repositories.js";
 import { AppError } from "../errors.js";
+import { onAccountDeleted } from "../services/scheduler/scheduler.js";
 import { forgetAccountTokens } from "../services/x/accountAuth.js";
 import { idParam, route } from "./util.js";
 
@@ -37,6 +38,7 @@ accountsRouter.delete(
     if (!account) throw new AppError("NOT_FOUND", "アカウントが見つかりません", 404);
     await forgetAccountTokens(account);
     accountsRepo.delete(id);
+    onAccountDeleted(id);
     return { ok: true };
   }),
 );

@@ -63,3 +63,26 @@ export interface PoolItem {
   createdAt: string;
   updatedAt: string;
 }
+
+export type SchedulerState = "stopped" | "running" | "paused";
+
+export interface RandomSettings {
+  state: SchedulerState;
+  accountIds: number[];
+  minMinutes: number;
+  maxMinutes: number;
+  notice: string | null;
+}
+
+export interface QueueEntry {
+  id: number;
+  accountId: number;
+  username: string;
+  scheduledAt: string;
+  content: string | null;
+}
+
+export interface SchedulerSnapshot {
+  settings: RandomSettings;
+  queue: QueueEntry[];
+}

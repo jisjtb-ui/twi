@@ -358,3 +358,43 @@ details > summary {
   user-select: none;
   padding: 4px 0;
 }
+
+/* ───── random ───── */
+
+.field {
+  margin-bottom: 10px;
+}
+.field .label {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.field.row .label {
+  margin: 0 4px 0 0;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.chip.on {
+  border-color: #5a5a62;
+  background: var(--panel-2);
+}
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}

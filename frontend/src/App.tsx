@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "./api/client";
-import type { Account, Health, PoolItem } from "./api/types";
+import type { Account, Health, PoolItem, SchedulerSnapshot } from "./api/types";
 import { AccountList } from "./components/AccountList";
 import { BulkPost } from "./components/BulkPost";
 import { ConfirmDialog } from "./components/ConfirmDialog";
+import { NextSchedule } from "./components/NextSchedule";
 import { OAuthBanner } from "./components/OAuthBanner";
 import { RandomPost } from "./components/RandomPost";
 import { useOAuthFlow } from "./hooks/useOAuthFlow";
@@ -11,6 +12,7 @@ import { useOAuthFlow } from "./hooks/useOAuthFlow";
 export function App() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [pool, setPool] = useState<PoolItem[]>([]);
+  const [scheduler, setScheduler] = useState<SchedulerSnapshot | null>(null);
   const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<Account | null>(null);
@@ -33,11 +35,29 @@ export function App() {
     }
   }, []);
 
+  const reloadScheduler = useCallback(async () => {
+    try {
+      setScheduler(await api.getScheduler());
+    } catch {
+      // 定期更新の一時的な失敗は無視
+    }
+  }, []);
+
   useEffect(() => {
     api.health().then(setHealth, showError);
     void reload();
     void reloadPool();
-  }, [reload, reloadPool]);
+    void reloadScheduler();
+  }, [reload, reloadPool, reloadScheduler]);
+
+  // ランダム投稿の進行（次回予定・最終投稿時刻）を定期的に反映
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      void reloadScheduler();
+      void reload();
+    }, 5000);
+    return () => window.clearInterval(id);
+  }, [reload, reloadScheduler]);
 
   const oauth = useOAuthFlow(reload);
 
@@ -121,13 +141,16 @@ export function App() {
 
         <div className="area-work">
           <BulkPost accounts={accounts} onPosted={reload} />
-          <RandomPost accounts={accounts} pool={pool} onPoolChanged={reloadPool} />
+          <RandomPost
+            accounts={accounts}
+            pool={pool}
+            scheduler={scheduler}
+            onPoolChanged={reloadPool}
+            onSchedulerChanged={setScheduler}
+          />
         </div>
 
-        <section className="panel area-next">
-          <h2>次回投稿</h2>
-          <p className="muted small">予定はありません</p>
-        </section>
+        <NextSchedule scheduler={scheduler} />
 
         <section className="panel area-history">
           <h2>投稿履歴</h2>

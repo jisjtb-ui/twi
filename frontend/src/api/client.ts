@@ -1,4 +1,4 @@
-import type { Account, ApiErrorBody, Health, HistoryItem, OAuthStatus, PoolItem, PostResult } from "./types";
+import type { Account, ApiErrorBody, Health, HistoryItem, OAuthStatus, PoolItem, PostResult, SchedulerSnapshot } from "./types";
 
 /**
  * フロントエンドとバックエンドの唯一の境界。
@@ -62,6 +62,14 @@ export const api = {
   updatePoolItem: (id: number, patch: { content?: string; enabled?: boolean }) =>
     request<PoolItem>("PATCH", `/pool/${id}`, patch),
   deletePoolItem: (id: number) => request<{ ok: true }>("DELETE", `/pool/${id}`),
+
+  // ランダム投稿
+  getScheduler: () => request<SchedulerSnapshot>("GET", "/scheduler"),
+  startScheduler: (input: { accountIds: number[]; minMinutes: number; maxMinutes: number }) =>
+    request<SchedulerSnapshot>("POST", "/scheduler/start", input),
+  pauseScheduler: () => request<SchedulerSnapshot>("POST", "/scheduler/pause"),
+  resumeScheduler: () => request<SchedulerSnapshot>("POST", "/scheduler/resume"),
+  stopScheduler: () => request<SchedulerSnapshot>("POST", "/scheduler/stop"),
 
   // 履歴
   listHistory: (limit = 100) => request<HistoryItem[]>("GET", `/history?limit=${limit}`),

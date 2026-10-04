@@ -7,12 +7,15 @@ import { accountsRouter } from "./routes/accounts.js";
 import { oauthRouter } from "./routes/oauth.js";
 import { poolRouter } from "./routes/pool.js";
 import { historyRouter, postsRouter } from "./routes/posts.js";
+import { schedulerRouter } from "./routes/scheduler.js";
 import { errorHandler } from "./routes/util.js";
+import { initScheduler, shutdownScheduler } from "./services/scheduler/scheduler.js";
 import { getSecretStore } from "./services/security/secretStore.js";
 import { isXConfigured } from "./services/x/client.js";
 
 getDb();
 const secretStore = await getSecretStore();
+initScheduler();
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
@@ -26,6 +29,7 @@ app.use("/api/oauth", oauthRouter);
 app.use("/api/posts", postsRouter);
 app.use("/api/history", historyRouter);
 app.use("/api/pool", poolRouter);
+app.use("/api/scheduler", schedulerRouter);
 app.use("/api", (_req, res) => {
   res.status(404).json({ error: { code: "NOT_FOUND", message: "APIが見つかりません" } });
 });
@@ -46,6 +50,7 @@ const server = app.listen(config.port, config.host, () => {
 });
 
 function shutdown(): void {
+  shutdownScheduler();
   server.close();
   closeDb();
   process.exit(0);
