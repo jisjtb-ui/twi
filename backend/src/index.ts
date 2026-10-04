@@ -49,6 +49,10 @@ const server = app.listen(config.port, config.host, () => {
   if (config.x.mock) console.log("[x-multi-poster] X_MOCK=true: X API を呼ばないモックモードで起動しています");
 });
 
+process.on("unhandledRejection", (reason) => {
+  console.error("[x-multi-poster] unhandledRejection", reason);
+});
+
 function shutdown(): void {
   shutdownScheduler();
   server.close();

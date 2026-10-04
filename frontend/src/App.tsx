@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "./api/client";
-import type { Account, Health, PoolItem, SchedulerSnapshot } from "./api/types";
+import type { Account, Health, HistoryItem, PoolItem, SchedulerSnapshot } from "./api/types";
 import { AccountList } from "./components/AccountList";
 import { BulkPost } from "./components/BulkPost";
 import { ConfirmDialog } from "./components/ConfirmDialog";
+import { History } from "./components/History";
 import { NextSchedule } from "./components/NextSchedule";
 import { OAuthBanner } from "./components/OAuthBanner";
 import { RandomPost } from "./components/RandomPost";
@@ -13,15 +14,19 @@ export function App() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [pool, setPool] = useState<PoolItem[]>([]);
   const [scheduler, setScheduler] = useState<SchedulerSnapshot | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<Account | null>(null);
 
   const showError = (err: unknown) => setError(err instanceof ApiError ? err.message : String(err));
 
+  /** アカウント一覧と履歴（投稿のたびに変わるもの）を再取得 */
   const reload = useCallback(async () => {
     try {
-      setAccounts(await api.listAccounts());
+      const [a, h] = await Promise.all([api.listAccounts(), api.listHistory()]);
+      setAccounts(a);
+      setHistory(h);
     } catch (err) {
       showError(err);
     }
@@ -152,10 +157,7 @@ export function App() {
 
         <NextSchedule scheduler={scheduler} />
 
-        <section className="panel area-history">
-          <h2>投稿履歴</h2>
-          <p className="muted small">履歴はありません</p>
-        </section>
+        <History items={history} />
       </main>
 
       {deleting && (
