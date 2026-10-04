@@ -18,3 +18,15 @@ export interface Account {
 export interface ApiErrorBody {
   error: { code: string; message: string };
 }
+
+export interface Health {
+  ok: boolean;
+  mock: boolean;
+  xConfigured: boolean;
+  secretStore: "keychain" | "file";
+}
+
+export type OAuthStatus =
+  | { status: "pending" }
+  | { status: "success"; account: Account; reauth: boolean }
+  | { status: "error"; message: string };

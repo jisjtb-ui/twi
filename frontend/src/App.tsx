@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "./api/client";
-import type { Account } from "./api/types";
+import type { Account, Health } from "./api/types";
 import { AccountList } from "./components/AccountList";
 import { ConfirmDialog } from "./components/ConfirmDialog";
+import { OAuthBanner } from "./components/OAuthBanner";
+import { useOAuthFlow } from "./hooks/useOAuthFlow";
 
 export function App() {
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [mock, setMock] = useState(false);
+  const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<Account | null>(null);
 
@@ -21,19 +23,18 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    api.health().then((h) => setMock(h.mock), showError);
+    api.health().then(setHealth, showError);
     void reload();
   }, [reload]);
 
-  const addAccount = async () => {
-    setError(null);
-    try {
-      await api.addMockAccount();
-      await reload();
-    } catch (err) {
-      showError(err);
-    }
-  };
+  const oauth = useOAuthFlow(reload);
+
+  // X の画面から戻ってきたときに最新状態を反映
+  useEffect(() => {
+    const onFocus = () => void reload();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [reload]);
 
   const toggle = async (a: Account) => {
     setAccounts((list) => list.map((x) => (x.id === a.id ? { ...x, selected: !a.selected } : x)));
@@ -70,16 +71,22 @@ export function App() {
       <header className="header">
         <h1>X Multi Poster</h1>
         <div className="right">
-          {mock && <span className="small warn">モックモード（X API を呼びません）</span>}
-          <button className="primary" onClick={addAccount}>
+          {health?.mock && <span className="small warn">モックモード（X API を呼びません）</span>}
+          <button className="primary" onClick={() => oauth.start(null)} disabled={oauth.state.phase === "waiting"}>
             ＋アカウント追加
           </button>
         </div>
       </header>
 
-      <main className="main">
+      <div className="notices">
+        {health && !health.xConfigured && (
+          <div className="notice warn">
+            X_CLIENT_ID が未設定です。README の「初期設定」に従って .env を設定し、アプリを再起動してください。
+          </div>
+        )}
+        <OAuthBanner state={oauth.state} onClose={oauth.cancel} />
         {error && (
-          <div className="notice err" style={{ gridColumn: "1 / -1" }}>
+          <div className="notice err">
             <div className="row">
               <span className="err">{error}</span>
               <span className="spacer" />
@@ -89,12 +96,14 @@ export function App() {
             </div>
           </div>
         )}
+      </div>
 
+      <main className="main">
         <AccountList
           accounts={accounts}
           onToggle={toggle}
           onSelectAll={selectAll}
-          onReauth={() => setError("再認証は Phase 2 で実装予定です")}
+          onReauth={(a) => oauth.start(a)}
           onDelete={setDeleting}
         />
 

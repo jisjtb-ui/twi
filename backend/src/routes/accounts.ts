@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { accountsRepo } from "../database/repositories.js";
 import { AppError } from "../errors.js";
+import { forgetAccountTokens } from "../services/x/accountAuth.js";
 import { idParam, route } from "./util.js";
 
 export const accountsRouter = Router();
@@ -32,7 +33,9 @@ accountsRouter.delete(
   "/:id",
   route(async (req) => {
     const id = idParam(req);
-    if (!accountsRepo.get(id)) throw new AppError("NOT_FOUND", "アカウントが見つかりません", 404);
+    const account = accountsRepo.get(id);
+    if (!account) throw new AppError("NOT_FOUND", "アカウントが見つかりません", 404);
+    await forgetAccountTokens(account);
     accountsRepo.delete(id);
     return { ok: true };
   }),

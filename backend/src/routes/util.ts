@@ -17,7 +17,8 @@ export function route(handler: Handler) {
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
   const appErr = toAppError(err);
-  if (appErr.httpStatus >= 500) console.error("[api]", err);
+  if (appErr.code === "INTERNAL") console.error("[api]", err);
+  else if (appErr.httpStatus >= 500) console.warn(`[api] ${appErr.code}: ${appErr.message}`);
   res.status(appErr.httpStatus).json({ error: { code: appErr.code, message: appErr.message } });
 }
 

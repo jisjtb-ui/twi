@@ -4,19 +4,23 @@ import express from "express";
 import { config, ROOT_DIR } from "./config.js";
 import { closeDb, getDb } from "./database/db.js";
 import { accountsRouter } from "./routes/accounts.js";
-import { devRouter } from "./routes/dev.js";
+import { oauthRouter } from "./routes/oauth.js";
 import { errorHandler } from "./routes/util.js";
+import { getSecretStore } from "./services/security/secretStore.js";
+import { isXConfigured } from "./services/x/client.js";
 
 getDb();
+const secretStore = await getSecretStore();
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
-app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, mock: config.x.mock });
+app.get("/api/health", async (_req, res) => {
+  const store = await getSecretStore();
+  res.json({ ok: true, mock: config.x.mock, xConfigured: isXConfigured(), secretStore: store.kind });
 });
 app.use("/api/accounts", accountsRouter);
-if (config.x.mock) app.use("/api/dev", devRouter);
+app.use("/api/oauth", oauthRouter);
 app.use("/api", (_req, res) => {
   res.status(404).json({ error: { code: "NOT_FOUND", message: "APIが見つかりません" } });
 });
@@ -31,6 +35,8 @@ if (fs.existsSync(webDist)) {
 
 const server = app.listen(config.port, config.host, () => {
   console.log(`[x-multi-poster] API: http://${config.host}:${config.port}`);
+  console.log(`[x-multi-poster] トークン保存先: ${secretStore.kind === "keychain" ? "OS資格情報ストア" : "暗号化ファイル"}`);
+  if (!isXConfigured()) console.warn("[x-multi-poster] X_CLIENT_ID が未設定です。README の初期設定を参照してください");
   if (config.x.mock) console.log("[x-multi-poster] X_MOCK=true: X API を呼ばないモックモードで起動しています");
 });
 

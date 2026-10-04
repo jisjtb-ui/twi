@@ -37,19 +37,19 @@ export function AccountList({ accounts, onToggle, onSelectAll, onReauth, onDelet
               />
               <Avatar account={a} />
               <div className="names">
-                <div>
-                  @{a.username}{" "}
+                <div>@{a.username}</div>
+                <div className="muted small">
+                  {a.displayName}
+                  {a.isMock ? "（ダミー）" : ""}
+                </div>
+                <div className="small">
                   {a.status === "connected" ? (
                     <span className="badge ok">● 接続済</span>
                   ) : (
                     <span className="badge warn">⚠ 再認証必要</span>
                   )}
+                  <span className="muted"> · 最終投稿 {formatTime(a.lastPostAt)}</span>
                 </div>
-                <div className="muted small">
-                  {a.displayName}
-                  {a.isMock ? "（ダミー）" : ""}
-                </div>
-                <div className="muted small">最終投稿 {formatTime(a.lastPostAt)}</div>
               </div>
               <div className="actions">
                 <button className="link small" onClick={() => onReauth(a)} title="X で再ログイン・再認可">

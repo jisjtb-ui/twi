@@ -1,4 +1,4 @@
-import type { Account, ApiErrorBody } from "./types";
+import type { Account, ApiErrorBody, Health, OAuthStatus } from "./types";
 
 /**
  * フロントエンドとバックエンドの唯一の境界。
@@ -37,7 +37,12 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const api = {
-  health: () => request<{ ok: boolean; mock: boolean }>("GET", "/health"),
+  health: () => request<Health>("GET", "/health"),
+
+  // OAuth（アカウント追加・再認証）
+  startOAuth: (reauthAccountId?: number) =>
+    request<{ state: string; authorizeUrl: string }>("POST", "/oauth/start", { reauthAccountId }),
+  oauthStatus: (state: string) => request<OAuthStatus>("GET", `/oauth/status?state=${encodeURIComponent(state)}`),
 
   // accounts
   listAccounts: () => request<Account[]>("GET", "/accounts"),
@@ -45,5 +50,4 @@ export const api = {
     request<Account>("PATCH", `/accounts/${id}`, { selected }),
   setAllSelected: (selected: boolean) => request<Account[]>("POST", "/accounts/select-all", { selected }),
   deleteAccount: (id: number) => request<{ ok: true }>("DELETE", `/accounts/${id}`),
-  addMockAccount: () => request<Account>("POST", "/dev/mock-account"),
 };
