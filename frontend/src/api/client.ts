@@ -1,4 +1,4 @@
-import type { Account, ApiErrorBody, Health, HistoryItem, OAuthStatus, PostResult } from "./types";
+import type { Account, ApiErrorBody, Health, HistoryItem, OAuthStatus, PoolItem, PostResult } from "./types";
 
 /**
  * フロントエンドとバックエンドの唯一の境界。
@@ -54,6 +54,14 @@ export const api = {
   // 一括投稿
   bulkPost: (requestId: string, text: string, accountIds: number[]) =>
     request<{ results: PostResult[] }>("POST", "/posts/bulk", { requestId, text, accountIds }),
+
+  // 投稿プール
+  listPool: () => request<PoolItem[]>("GET", "/pool"),
+  addPoolItem: (content: string) => request<PoolItem>("POST", "/pool", { content }),
+  addPoolLines: (text: string) => request<{ added: number }>("POST", "/pool/bulk", { text }),
+  updatePoolItem: (id: number, patch: { content?: string; enabled?: boolean }) =>
+    request<PoolItem>("PATCH", `/pool/${id}`, patch),
+  deletePoolItem: (id: number) => request<{ ok: true }>("DELETE", `/pool/${id}`),
 
   // 履歴
   listHistory: (limit = 100) => request<HistoryItem[]>("GET", `/history?limit=${limit}`),

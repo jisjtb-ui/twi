@@ -55,3 +55,11 @@ export interface PostResult {
   rateLimitResetAt: number | null;
   history: HistoryItem | null;
 }
+
+export interface PoolItem {
+  id: number;
+  content: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

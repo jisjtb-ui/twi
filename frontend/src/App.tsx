@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "./api/client";
-import type { Account, Health } from "./api/types";
+import type { Account, Health, PoolItem } from "./api/types";
 import { AccountList } from "./components/AccountList";
 import { BulkPost } from "./components/BulkPost";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { OAuthBanner } from "./components/OAuthBanner";
+import { RandomPost } from "./components/RandomPost";
 import { useOAuthFlow } from "./hooks/useOAuthFlow";
 
 export function App() {
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [pool, setPool] = useState<PoolItem[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<Account | null>(null);
@@ -23,10 +25,19 @@ export function App() {
     }
   }, []);
 
+  const reloadPool = useCallback(async () => {
+    try {
+      setPool(await api.listPool());
+    } catch (err) {
+      showError(err);
+    }
+  }, []);
+
   useEffect(() => {
     api.health().then(setHealth, showError);
     void reload();
-  }, [reload]);
+    void reloadPool();
+  }, [reload, reloadPool]);
 
   const oauth = useOAuthFlow(reload);
 
@@ -110,10 +121,7 @@ export function App() {
 
         <div className="area-work">
           <BulkPost accounts={accounts} onPosted={reload} />
-          <section className="panel">
-            <h2>ランダム投稿</h2>
-            <p className="muted small">Phase 5・6 で実装予定</p>
-          </section>
+          <RandomPost accounts={accounts} pool={pool} onPoolChanged={reloadPool} />
         </div>
 
         <section className="panel area-next">
