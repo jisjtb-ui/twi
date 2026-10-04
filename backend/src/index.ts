@@ -5,6 +5,7 @@ import { config, ROOT_DIR } from "./config.js";
 import { closeDb, getDb } from "./database/db.js";
 import { accountsRouter } from "./routes/accounts.js";
 import { oauthRouter } from "./routes/oauth.js";
+import { historyRouter, postsRouter } from "./routes/posts.js";
 import { errorHandler } from "./routes/util.js";
 import { getSecretStore } from "./services/security/secretStore.js";
 import { isXConfigured } from "./services/x/client.js";
@@ -21,6 +22,8 @@ app.get("/api/health", async (_req, res) => {
 });
 app.use("/api/accounts", accountsRouter);
 app.use("/api/oauth", oauthRouter);
+app.use("/api/posts", postsRouter);
+app.use("/api/history", historyRouter);
 app.use("/api", (_req, res) => {
   res.status(404).json({ error: { code: "NOT_FOUND", message: "APIが見つかりません" } });
 });
