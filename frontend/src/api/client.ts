@@ -1,4 +1,4 @@
-import type { Account, ApiErrorBody, Health, OAuthStatus } from "./types";
+import type { Account, ApiErrorBody, Health, HistoryItem, OAuthStatus, PostResult } from "./types";
 
 /**
  * フロントエンドとバックエンドの唯一の境界。
@@ -50,4 +50,11 @@ export const api = {
     request<Account>("PATCH", `/accounts/${id}`, { selected }),
   setAllSelected: (selected: boolean) => request<Account[]>("POST", "/accounts/select-all", { selected }),
   deleteAccount: (id: number) => request<{ ok: true }>("DELETE", `/accounts/${id}`),
+
+  // 一括投稿
+  bulkPost: (requestId: string, text: string, accountIds: number[]) =>
+    request<{ results: PostResult[] }>("POST", "/posts/bulk", { requestId, text, accountIds }),
+
+  // 履歴
+  listHistory: (limit = 100) => request<HistoryItem[]>("GET", `/history?limit=${limit}`),
 };

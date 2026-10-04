@@ -30,3 +30,28 @@ export type OAuthStatus =
   | { status: "pending" }
   | { status: "success"; account: Account; reauth: boolean }
   | { status: "error"; message: string };
+
+export interface HistoryItem {
+  id: number;
+  accountId: number | null;
+  accountUsername: string;
+  content: string;
+  xPostId: string | null;
+  status: "success" | "failed";
+  errorCode: string | null;
+  errorMessage: string | null;
+  source: "bulk" | "random";
+  postPoolId: number | null;
+  postedAt: string;
+}
+
+export interface PostResult {
+  accountId: number;
+  username: string;
+  ok: boolean;
+  xPostId: string | null;
+  errorCode: string | null;
+  errorMessage: string | null;
+  rateLimitResetAt: number | null;
+  history: HistoryItem | null;
+}

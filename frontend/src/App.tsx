@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "./api/client";
 import type { Account, Health } from "./api/types";
 import { AccountList } from "./components/AccountList";
+import { BulkPost } from "./components/BulkPost";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { OAuthBanner } from "./components/OAuthBanner";
 import { useOAuthFlow } from "./hooks/useOAuthFlow";
@@ -108,10 +109,7 @@ export function App() {
         />
 
         <div className="area-work">
-          <section className="panel">
-            <h2>一括投稿</h2>
-            <p className="muted small">Phase 4 で実装予定</p>
-          </section>
+          <BulkPost accounts={accounts} onPosted={reload} />
           <section className="panel">
             <h2>ランダム投稿</h2>
             <p className="muted small">Phase 5・6 で実装予定</p>
