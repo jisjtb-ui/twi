@@ -8,11 +8,35 @@
     "dev": "npm run build && electron .",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder --win nsis portable"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
     "electron": "^38.0.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "jp.xmultibrowser.desktop",
+    "productName": "X Multi Browser",
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
