@@ -45,4 +45,5 @@ app.whenReady().then(async () => {
   );
 
   await win.loadFile(path.join(dirname, "ui.html"));
+  await sessions.restore();
 });
