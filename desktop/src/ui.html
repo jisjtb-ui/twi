@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>X Multi Browser</title>
+<style>
+body{margin:0;background:#101214;color:#eee;font:14px system-ui}#bar{height:120px;padding:10px;box-sizing:border-box;border-bottom:1px solid #333}.row{display:flex;gap:8px;align-items:center}.tabs{flex:1}button,textarea{background:#181b1f;color:#eee;border:1px solid #39404a;border-radius:7px;padding:7px}textarea{width:70%;height:48px}.active{border-color:#1d9bf0}.ok{color:#55c878}.err{color:#ff7777}
+</style>
+</head>
+<body>
+<div id="bar">
+ <div class="row"><strong>X Multi Browser</strong><div id="tabs" class="tabs"></div><button id="add">+追加</button></div>
+ <div class="row"><textarea id="text" placeholder="投稿内容"></textarea><button id="post">選択アカウントへ投稿</button></div>
+ <div id="result"></div>
+</div>
+<script>
+let accounts=[],active=null;const selected=new Set();
+const tabs=document.getElementById("tabs"),result=document.getElementById("result");
+async function load(){accounts=await window.xMulti.listAccounts();render()}
+function render(){tabs.innerHTML="";for(const a of accounts){const c=document.createElement("input");c.type="checkbox";c.checked=selected.has(a.id);c.onchange=()=>c.checked?selected.add(a.id):selected.delete(a.id);const b=document.createElement("button");b.textContent=a.id.slice(0,8);b.className=active===a.id?"active":"";b.onclick=async()=>{active=a.id;await window.xMulti.switchAccount(a.id);render()};tabs.append(c,b)}}
+document.getElementById("add").onclick=async()=>{const a=await window.xMulti.addAccount();selected.add(a.id);active=a.id;await load()};
+document.getElementById("post").onclick=async()=>{const text=document.getElementById("text").value.trim();if(!text||!selected.size)return;result.textContent="実行中";const rows=await window.xMulti.post([...selected],text);result.innerHTML=rows.map(r=>`<span class="${r.code==="SUCCESS"?"ok":"err"}">${r.accountId.slice(0,8)}: ${r.code}</span>`).join(" / ")};
+load();
+</script>
+</body>
+</html>
